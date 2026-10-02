@@ -3,6 +3,7 @@ import sqlite3
 from datetime import datetime
 from functools import wraps  #que es wraps?   es una funcion que permite envolver funciones
 from datetime import datetime, timedelta
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 # ---> NUEVO (SEGURIDAD): Llave secreta obligatoria para que Flask encripte las sesiones
@@ -48,31 +49,23 @@ def index():
 # =======================================================
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Si el usuario envió el formulario (POST)
     if request.method == 'POST':
-        # 1. Recibimos los datos que el usuario escribió en el HTML
         username = request.form['username']
         password = request.form['password']
         
-        # 2. Conectamos a la base de datos
         conn = get_db_connection()
         
-        # 3. Buscamos si existe ese usuario con esa contraseña exacta en la base de datos
-        usuario = conn.execute('SELECT * FROM USUARIO WHERE Nombre_Usuario = ? AND Contrasena = ?', (username, password)).fetchone()
+        # 1. Buscamos SOLO por el nombre de usuario
+        usuario = conn.execute('SELECT * FROM USUARIO WHERE Nombre_Usuario = ?', (username,)).fetchone()
         conn.close()
         
-        # 4. Evaluamos el resultado
-        if usuario:
-            # ---> Guarda el "ticket" en la sesión
+        # 2. Verificamos si el usuario existe Y si la contraseña coincide con el hash
+        if usuario and check_password_hash(usuario['Contrasena'], password):
             session['usuario_id'] = usuario['ID_Usuario'] 
-            
-            # ¡Las credenciales son correctas! Lo dejamos pasar al inventario
             return redirect(url_for('listar_productos'))
         else:
-            # Credenciales inválidas. Recargamos el login mostrando el error
             return render_template('login.html', error="Usuario o contraseña incorrectos.")
     
-    # Si el usuario solo está entrando a la página o tocando "Volver" (GET)
     return render_template('login.html')
 
 # =======================================================
@@ -106,17 +99,20 @@ def registro():
             conn.close()
             return render_template('registro.html', error="Ese nombre de usuario ya está registrado.")
 
-        # 3. Guardamos el nuevo administrador en la base de datos
+        # Generamos el hash de la contraseña de forma segura
+        password_hasheada = generate_password_hash(nueva_password)
+
+        # 3. Guardamos el nuevo administrador en la base de datos (USAMOS EL HASH)
         if len(nombres_col) == 3:
             conn.execute(
                 f'INSERT INTO USUARIO ({col_usuario}, {col_password}) VALUES (?, ?)',
-                (nuevo_usuario, nueva_password)
+                (nuevo_usuario, password_hasheada)
             )
         elif len(nombres_col) >= 4:
             col_extra = nombres_col[3]
             conn.execute(
                 f'INSERT INTO USUARIO ({col_usuario}, {col_password}, {col_extra}) VALUES (?, ?, ?)',
-                (nuevo_usuario, nueva_password, 'Administrador')
+                (nuevo_usuario, password_hasheada, 'Administrador')
             )
 
         conn.commit()
