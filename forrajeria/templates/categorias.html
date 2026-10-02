@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Categorías - Forrajería</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #1e293b;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 15px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 8px 10px 20px 10px;
+            border-bottom: 1px solid #334155;
+            margin-bottom: 15px;
+            color: #f8fafc;
+            line-height: 1.25;
+        }
+
+        .sidebar-logo {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #10b981;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+            flex-shrink: 0;
+            background-color: white;
+        }
+
+        .sidebar-brand span {
+            display: block;
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: normal;
+            margin-top: 4px;
+        }
+
+        .nav-section {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: bold;
+            padding: 10px 15px 5px 15px;
+            letter-spacing: 0.8px;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex-grow: 1;
+        }
+
+        .nav-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 11px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links a:hover {
+            background-color: #334155;
+            color: #ffffff;
+        }
+
+        .nav-links a.activo {
+            background-color: #3b82f6;
+            color: white;
+            font-weight: 600;
+        }
+
+        .nav-links a.btn-venta-sidebar {
+            background-color: #10b981;
+            color: white;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .nav-links a.btn-venta-sidebar:hover {
+            background-color: #059669;
+        }
+
+        .btn-salir {
+            color: #f87171 !important;
+            margin-top: auto;
+            border-top: 1px solid #334155;
+            padding-top: 15px !important;
+            border-radius: 0 !important;
+        }
+
+        .btn-salir:hover {
+            background-color: rgba(239, 68, 68, 0.1) !important;
+            color: #ef4444 !important;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 30px 40px;
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header-bar h2 {
+            margin: 0;
+            font-size: 24px;
+            color: #1e293b;
+        }
+
+        .btn-accion-sup {
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            color: white;
+            background-color: #0ea5e9;
+            transition: opacity 0.2s;
+        }
+
+        .btn-accion-sup:hover {
+            opacity: 0.9;
+        }
+
+        /* === BARRA DE BÚSQUEDA === */
+        .buscador-contenedor {
+            position: relative;
+            margin-bottom: 20px;
+            max-width: 420px;
+        }
+
+        .buscador-icono {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: #94a3b8;
+            pointer-events: none;
+        }
+
+        .buscador-input {
+            width: 100%;
+            padding: 12px 15px 12px 42px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1e293b;
+            background-color: #ffffff;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease;
+        }
+
+        .buscador-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .card-tabla {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #475569;
+            text-transform: uppercase;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .acciones-flex {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-editar {
+            background-color: #f59e0b;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .btn-eliminar {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        #sin-resultados {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+            font-size: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <img src="{{ url_for('static', filename='forrajeria_los_hermanos.jpeg') }}" alt="Logo" class="sidebar-logo">
+            <div>
+                Forrajería<br>Los Hermanos
+                <span>Sistema de Gestión</span>
+            </div>
+        </div>
+        <div class="nav-links">
+            <div class="nav-section">Módulos</div>
+            <a href="/productos"> Inventario</a>
+            <a href="/categorias" class="activo"> Categorías</a>
+            <a href="/clientes"> Clientes</a>
+            <a href="/reporte_ventas"> Reportes</a>
+
+            <div class="nav-section" style="margin-top: 15px;">Operaciones</div>
+            <a href="/registrar_venta" class="btn-venta-sidebar"> Nueva Venta</a>
+            <a href="/ingreso_mercaderia"> Ingreso Stock</a>
+            <a href="/nuevo_producto"> Nuevo Producto</a>
+
+            <a href="/logout" class="btn-salir"> Cerrar Sesión</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-bar">
+            <h2>Listado de Categorías</h2>
+            <a href="/nueva_categoria" class="btn-accion-sup">Nueva Categoría</a>
+        </div>
+
+        <!-- BUSCADOR EN TIEMPO REAL -->
+        <div class="buscador-contenedor">
+            <span class="buscador-icono">🔍</span>
+            <input type="text" id="input-buscador" class="buscador-input"
+                placeholder="Buscar categoría por nombre o ID..." onkeyup="filtrarCategorias()">
+        </div>
+
+        <div class="card-tabla">
+            <table id="tabla-categorias">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre de la Categoría</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cat in categorias %}
+                    <tr class="fila-item">
+                        <td>#{{ cat['ID_Categoria'] }}</td>
+                        <td><strong>{{ cat['Nombre_Categoria'] }}</strong></td>
+                        <td>
+                            <div class="acciones-flex">
+                                <a href="/editar_categoria/{{ cat['ID_Categoria'] }}" class="btn-editar">Editar</a>
+                                <form action="/eliminar_categoria/{{ cat['ID_Categoria'] }}" method="POST"
+                                    onsubmit="return confirm('¿Seguro que deseas eliminar esta categoría?');"
+                                    style="margin:0;">
+                                    <button type="submit" class="btn-eliminar">Eliminar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div id="sin-resultados">
+                No se encontraron categorías que coincidan con tu búsqueda.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function filtrarCategorias() {
+            const texto = document.getElementById('input-buscador').value.toLowerCase();
+            const filas = document.querySelectorAll('#tabla-categorias tbody .fila-item');
+            let coincidencias = 0;
+
+            filas.forEach(fila => {
+                const id = fila.cells[0].textContent.toLowerCase();
+                const nombre = fila.cells[1].textContent.toLowerCase();
+
+                if (id.includes(texto) || nombre.includes(texto)) {
+                    fila.style.display = '';
+                    coincidencias++;
+                } else {
+                    fila.style.display = 'none';
+                }
+            });
+
+            document.getElementById('sin-resultados').style.display = coincidencias === 0 ? 'block' : 'none';
+        }
+    </script>
+</body>
+
+</html>

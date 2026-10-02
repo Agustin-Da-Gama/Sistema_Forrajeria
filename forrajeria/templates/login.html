@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Forrajería Los Hermanos</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .login-card {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 35px;
+            border-radius: 14px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+            border-top: 5px solid #10b981;
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .brand-logo-img {
+            width: 95px;
+            height: 95px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 12px;
+            border: 3px solid #10b981;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+            background-color: white;
+        }
+
+        .brand-header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        .brand-header p {
+            margin: 6px 0 0 0;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 15px;
+            color: #1e293b;
+            background-color: #f8fafc;
+            transition: all 0.2s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #10b981;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        }
+
+        .btn-ingresar {
+            width: 100%;
+            padding: 14px;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-top: 8px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-ingresar:hover {
+            background-color: #059669;
+        }
+
+        .btn-ingresar:active {
+            transform: scale(0.99);
+        }
+
+        .alerta-error {
+            background-color: #fef2f2;
+            color: #b91c1c;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 13px;
+            border: 1px solid #f87171;
+        }
+
+        .alerta-exito {
+            background-color: #ecfdf5;
+            color: #047857;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 13px;
+            border: 1px solid #6ee7b7;
+        }
+
+        .registro-box {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 1px solid #f1f5f9;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .registro-box a {
+            color: #0ea5e9;
+            font-weight: 700;
+            text-decoration: none;
+            margin-left: 4px;
+        }
+
+        .registro-box a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-card">
+        <div class="brand-header">
+            <img src="{{ url_for('static', filename='forrajeria_los_hermanos.jpeg') }}" alt="Logo"
+                class="brand-logo-img">
+            <h1>Forrajería Los Hermanos</h1>
+            <p>Panel de Control y Gestión</p>
+        </div>
+
+        {% if error %}
+        <div class="alerta-error">{{ error }}</div>
+        {% endif %}
+
+        {% if exito %}
+        <div class="alerta-exito">{{ exito }}</div>
+        {% endif %}
+
+        <form action="/login" method="POST">
+            <div class="form-group">
+                <label for="username">Usuario:</label>
+                <input type="text" id="username" name="username" required placeholder="Ingrese su usuario" autofocus>
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" name="password" required placeholder="Ingrese su contraseña">
+            </div>
+            <button type="submit" class="btn-ingresar">Ingresar al Sistema</button>
+        </form>
+
+        <div class="registro-box">
+            ¿Nuevo administrador? <a href="/registro">Crear una cuenta</a>
+        </div>
+    </div>
+</body>
+
+</html>
