@@ -291,12 +291,22 @@
             <a href="/productos"> Inventario</a>
             <a href="/categorias"> Categorías</a>
             <a href="/clientes" class="activo"> Clientes</a>
+
+            <!-- ====== OCULTAMOS REPORTES AL VENDEDOR ====== -->
+            {% if session.get('rol') == 'Administrador' %}
             <a href="/reporte_ventas"> Reportes</a>
+            {% endif %}
+            <!-- ============================================= -->
 
             <div class="nav-section" style="margin-top: 15px;">Operaciones</div>
             <a href="/registrar_venta" class="btn-venta-sidebar"> Nueva Venta</a>
             <a href="/ingreso_mercaderia"> Ingreso Stock</a>
+
+            <!-- ====== OCULTAMOS NUEVO PRODUCTO AL VENDEDOR ====== -->
+            {% if session.get('rol') == 'Administrador' %}
             <a href="/nuevo_producto"> Nuevo Producto</a>
+            {% endif %}
+            <!-- ================================================== -->
 
             <a href="/logout" class="btn-salir"> Cerrar Sesión</a>
         </div>
@@ -305,7 +315,11 @@
     <div class="main-content">
         <div class="header-bar">
             <h2>Listado de Clientes</h2>
+            <!-- ====== OCULTAMOS NUEVO CLIENTE AL VENDEDOR ====== -->
+            {% if session.get('rol') == 'Administrador' %}
             <a href="/nuevo_cliente" class="btn-accion-sup">Nuevo Cliente</a>
+            {% endif %}
+            <!-- ================================================= -->
         </div>
 
         <!-- BUSCADOR EN TIEMPO REAL -->
@@ -334,11 +348,16 @@
                         <td>
                             <div class="acciones-flex">
                                 <a href="/editar_cliente/{{ cliente['ID_Cliente'] }}" class="btn-editar">Editar</a>
+
+                                <!-- ====== OCULTAMOS ELIMINAR AL VENDEDOR ====== -->
+                                {% if session.get('rol') == 'Administrador' %}
                                 <form action="/eliminar_cliente/{{ cliente['ID_Cliente'] }}" method="POST"
                                     onsubmit="return confirm('¿Seguro que deseas eliminar este cliente?');"
                                     style="margin:0;">
                                     <button type="submit" class="btn-eliminar">Eliminar</button>
                                 </form>
+                                {% endif %}
+                                <!-- ============================================ -->
                             </div>
                         </td>
                     </tr>

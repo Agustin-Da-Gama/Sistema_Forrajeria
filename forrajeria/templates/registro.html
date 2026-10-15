@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Administrador - Forrajería Los Hermanos</title>
+    <title>Registro de Usuario - Forrajería Los Hermanos</title>
     <style>
         * {
             box-sizing: border-box;
@@ -73,7 +73,8 @@
             font-size: 14px;
         }
 
-        input {
+        input,
+        select {
             width: 100%;
             padding: 12px 14px;
             border: 1px solid #cbd5e1;
@@ -84,7 +85,8 @@
             transition: all 0.2s ease;
         }
 
-        input:focus {
+        input:focus,
+        select:focus {
             outline: none;
             border-color: #0ea5e9;
             background-color: #ffffff;
@@ -149,7 +151,7 @@
         <div class="brand-header">
             <img src="{{ url_for('static', filename='forrajeria_los_hermanos.jpeg') }}" alt="Logo"
                 class="brand-logo-img">
-            <h1>Registrar Administrador</h1>
+            <h1>Registrar Usuario</h1>
             <p>Crear nueva cuenta de acceso al sistema</p>
         </div>
 
@@ -172,6 +174,18 @@
                 <input type="password" id="confirm_password" name="confirm_password" required
                     placeholder="Repita la contraseña">
             </div>
+
+            <!-- ============================================== -->
+            <!-- NUEVO SELECTOR DE ROL -->
+            <!-- ============================================== -->
+            <div class="form-group">
+                <label for="rol">Rol en el sistema:</label>
+                <select name="rol" id="rol" required>
+                    <option value="Administrador">Administrador</option>
+                    <option value="Vendedor">Vendedor</option>
+                </select>
+            </div>
+
             <button type="submit" class="btn-registrar">Registrar Cuenta</button>
         </form>
 

@@ -281,12 +281,22 @@
             <a href="/productos"> Inventario</a>
             <a href="/categorias" class="activo"> Categorías</a>
             <a href="/clientes"> Clientes</a>
+
+            <!-- ====== OCULTAMOS REPORTES AL VENDEDOR ====== -->
+            {% if session.get('rol') == 'Administrador' %}
             <a href="/reporte_ventas"> Reportes</a>
+            {% endif %}
+            <!-- ============================================= -->
 
             <div class="nav-section" style="margin-top: 15px;">Operaciones</div>
             <a href="/registrar_venta" class="btn-venta-sidebar"> Nueva Venta</a>
             <a href="/ingreso_mercaderia"> Ingreso Stock</a>
+
+            <!-- ====== OCULTAMOS NUEVO PRODUCTO AL VENDEDOR ====== -->
+            {% if session.get('rol') == 'Administrador' %}
             <a href="/nuevo_producto"> Nuevo Producto</a>
+            {% endif %}
+            <!-- ================================================== -->
 
             <a href="/logout" class="btn-salir"> Cerrar Sesión</a>
         </div>
@@ -295,7 +305,11 @@
     <div class="main-content">
         <div class="header-bar">
             <h2>Listado de Categorías</h2>
+            <!-- ====== OCULTAMOS NUEVA CATEGORÍA AL VENDEDOR ====== -->
+            {% if session.get('rol') == 'Administrador' %}
             <a href="/nueva_categoria" class="btn-accion-sup">Nueva Categoría</a>
+            {% endif %}
+            <!-- =================================================== -->
         </div>
 
         <!-- BUSCADOR EN TIEMPO REAL -->
@@ -322,11 +336,16 @@
                         <td>
                             <div class="acciones-flex">
                                 <a href="/editar_categoria/{{ cat['ID_Categoria'] }}" class="btn-editar">Editar</a>
+
+                                <!-- ====== OCULTAMOS ELIMINAR AL VENDEDOR ====== -->
+                                {% if session.get('rol') == 'Administrador' %}
                                 <form action="/eliminar_categoria/{{ cat['ID_Categoria'] }}" method="POST"
                                     onsubmit="return confirm('¿Seguro que deseas eliminar esta categoría?');"
                                     style="margin:0;">
                                     <button type="submit" class="btn-eliminar">Eliminar</button>
                                 </form>
+                                {% endif %}
+                                <!-- ============================================ -->
                             </div>
                         </td>
                     </tr>

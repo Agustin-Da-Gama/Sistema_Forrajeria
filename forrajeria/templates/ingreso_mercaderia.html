@@ -249,12 +249,22 @@
             <a href="/productos"> Inventario</a>
             <a href="/categorias"> Categorías</a>
             <a href="/clientes"> Clientes</a>
+
+            <!-- ====== OCULTAMOS REPORTES AL VENDEDOR ====== -->
+            {% if session.get('rol') == 'Administrador' %}
             <a href="/reporte_ventas"> Reportes</a>
+            {% endif %}
+            <!-- ============================================= -->
 
             <div class="nav-section" style="margin-top: 15px;">Operaciones</div>
             <a href="/registrar_venta" class="btn-venta-sidebar"> Nueva Venta</a>
             <a href="/ingreso_mercaderia" class="activo"> Ingreso Stock</a>
+
+            <!-- ====== OCULTAMOS NUEVO PRODUCTO AL VENDEDOR ====== -->
+            {% if session.get('rol') == 'Administrador' %}
             <a href="/nuevo_producto"> Nuevo Producto</a>
+            {% endif %}
+            <!-- ================================================== -->
 
             <a href="/logout" class="btn-salir"> Cerrar Sesión</a>
         </div>

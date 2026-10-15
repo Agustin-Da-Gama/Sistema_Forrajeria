@@ -45,7 +45,7 @@ def index():
     return render_template('login.html')
 
 # =======================================================
-# ESTÁ ES LA RUTA PARA EL LOGIN
+# RUTA PARA EL LOGIN
 # =======================================================
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -54,14 +54,13 @@ def login():
         password = request.form['password']
         
         conn = get_db_connection()
-        
-        # 1. Buscamos SOLO por el nombre de usuario
         usuario = conn.execute('SELECT * FROM USUARIO WHERE Nombre_Usuario = ?', (username,)).fetchone()
         conn.close()
         
-        # 2. Verificamos si el usuario existe Y si la contraseña coincide con el hash
         if usuario and check_password_hash(usuario['Contrasena'], password):
             session['usuario_id'] = usuario['ID_Usuario'] 
+            # ¡AQUÍ GUARDAMOS EL ROL PARA SABER QUIÉN ES!
+            session['rol'] = usuario['Rol']  
             return redirect(url_for('listar_productos'))
         else:
             return render_template('login.html', error="Usuario o contraseña incorrectos.")
@@ -69,7 +68,7 @@ def login():
     return render_template('login.html')
 
 # =======================================================
-#      RUTA PARA REGISTRAR NUEVO ADMINISTRADOR
+# RUTA PARA REGISTRAR NUEVO USUARIO
 # =======================================================
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
@@ -77,20 +76,20 @@ def registro():
         nuevo_usuario = request.form['username'].strip()
         nueva_password = request.form['password']
         confirmar_password = request.form['confirm_password']
+        
+        # ¡AQUÍ RECIBIMOS EL ROL DEL FORMULARIO!
+        rol_elegido = request.form['rol'] 
 
-        # 1. Verificamos que ambas contraseñas coincidan
         if nueva_password != confirmar_password:
             return render_template('registro.html', error="Las contraseñas no coinciden.")
 
         conn = get_db_connection()
         
-        # Detectamos automáticamente los nombres de las columnas de tu tabla USUARIO
         columnas_info = conn.execute('PRAGMA table_info(USUARIO)').fetchall()
         nombres_col = [col[1] for col in columnas_info]
         col_usuario = nombres_col[1]
         col_password = nombres_col[2]
 
-        # 2. Verificamos si el nombre de usuario ya existe
         usuario_existente = conn.execute(
             f'SELECT * FROM USUARIO WHERE {col_usuario} = ?', (nuevo_usuario,)
         ).fetchone()
@@ -99,27 +98,19 @@ def registro():
             conn.close()
             return render_template('registro.html', error="Ese nombre de usuario ya está registrado.")
 
-        # Generamos el hash de la contraseña de forma segura
         password_hasheada = generate_password_hash(nueva_password)
 
-        # 3. Guardamos el nuevo administrador en la base de datos (USAMOS EL HASH)
-        if len(nombres_col) == 3:
-            conn.execute(
-                f'INSERT INTO USUARIO ({col_usuario}, {col_password}) VALUES (?, ?)',
-                (nuevo_usuario, password_hasheada)
-            )
-        elif len(nombres_col) >= 4:
-            col_extra = nombres_col[3]
+        if len(nombres_col) >= 4:
+            col_extra = nombres_col[3] # Columna Rol
             conn.execute(
                 f'INSERT INTO USUARIO ({col_usuario}, {col_password}, {col_extra}) VALUES (?, ?, ?)',
-                (nuevo_usuario, password_hasheada, 'Administrador')
+                (nuevo_usuario, password_hasheada, rol_elegido)
             )
 
         conn.commit()
         conn.close()
 
-        # Redirigimos al login con un mensaje de éxito
-        return render_template('login.html', exito="Administrador registrado con éxito. Ya podés iniciar sesión.")
+        return render_template('login.html', exito="Usuario registrado con éxito. Ya podés iniciar sesión.")
 
     return render_template('registro.html')
 # =======================================================
@@ -191,24 +182,25 @@ def registrar_venta():
         id_nueva_venta = cursor.lastrowid 
         
         for item in items_venta:
+            # ---> NUEVO: AQUÍ ESTÁ LA MAGIA. AHORA GUARDAMOS EL "Precio_Unitario" CONGELADO EN EL TIEMPO
             cursor.execute('''
-                INSERT INTO DETALLE_VENTA (Cantidad_Vendida, Subtotal, ID_Venta, ID_Producto)
-                VALUES (?, ?, ?, ?)
-            ''', (item['cantidad'], item['subtotal'], id_nueva_venta, item['id_producto']))
+                INSERT INTO DETALLE_VENTA (Cantidad_Vendida, Precio_Unitario, Subtotal, ID_Venta, ID_Producto)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (item['cantidad'], item['precio'], item['subtotal'], id_nueva_venta, item['id_producto']))
             
             cursor.execute('''
                 UPDATE PRODUCTO SET Stock_Actual = Stock_Actual - ? WHERE ID_Producto = ?
             ''', (item['cantidad'], item['id_producto']))
 
         # =========================================================================
-        # ---> NUEVO (TICKET): Buscamos los datos del cliente para el comprobante
+        # ---> Buscamos los datos del cliente para el comprobante
         # =========================================================================
         cliente = conn.execute('SELECT * FROM CLIENTE WHERE ID_Cliente = ?', (id_cliente,)).fetchone()
         
         conn.commit()
         conn.close()
         
-        # ---> NUEVO (TICKET): Cargamos la pantalla del ticket en lugar de ir al inventario
+        # ---> Cargamos la pantalla del ticket
         return render_template('ticket.html', 
                                id_venta=id_nueva_venta, 
                                fecha=fecha_hora_actual, 
@@ -218,19 +210,12 @@ def registrar_venta():
                                cantidad=cantidad, 
                                subtotal=subtotal, 
                                cliente=cliente)
-        # =========================================================================
-        
-        return redirect(url_for('listar_productos'))
 
     else:
         productos_disponibles = conn.execute('SELECT * FROM PRODUCTO WHERE Stock_Actual > 0').fetchall()
-        
-        # ---> NUEVO: Cuando entramos a la pantalla por primera vez, buscamos a los clientes en la base de datos
         clientes = conn.execute('SELECT * FROM CLIENTE').fetchall()
-        
         conn.close()
         
-        # ---> NUEVO: Le enviamos la lista de "clientes" al HTML para que llene el menú desplegable
         return render_template('registrar_venta.html', productos=productos_disponibles, clientes=clientes)
 #================================================================================================================
 
@@ -385,7 +370,9 @@ def reporte_ventas():
                            total_historico=total_historico)
 
 
-# ---> NUEVA RUTA: Permite abrir y reimprimir cualquier ticket desde el historial
+# =======================================================
+#      RUTA PARA VER TICKETS HISTÓRICOS Y CONGELADOS
+# =======================================================
 @app.route('/ver_ticket/<int:id_venta>')
 @login_required
 def ver_ticket(id_venta):
@@ -394,8 +381,9 @@ def ver_ticket(id_venta):
     venta = conn.execute('SELECT * FROM VENTA WHERE ID_Venta = ?', (id_venta,)).fetchone()
     cliente = conn.execute('SELECT * FROM CLIENTE WHERE ID_Cliente = ?', (venta['ID_Cliente'],)).fetchone()
     
+    # NUEVO: Ahora traemos directamente D.Precio_Unitario desde los detalles
     detalles = conn.execute('''
-        SELECT D.Cantidad_Vendida, D.Subtotal, P.Nombre, P.Precio
+        SELECT D.Cantidad_Vendida, D.Subtotal, D.Precio_Unitario, P.Nombre
         FROM DETALLE_VENTA D
         JOIN PRODUCTO P ON D.ID_Producto = P.ID_Producto
         WHERE D.ID_Venta = ?
@@ -403,11 +391,13 @@ def ver_ticket(id_venta):
     
     items_venta = []
     for d in detalles:
-        # Calculamos el precio unitario al que se vendió en ese momento
-        precio_unitario = d['Subtotal'] / d['Cantidad_Vendida'] if d['Cantidad_Vendida'] else d['Precio']
+        # Lógica inteligente: Si el ticket tiene el precio guardado, lo usa.
+        # Si es un ticket muy viejo (antes de agregar la columna), calcula la división para no fallar.
+        precio_congelado = d['Precio_Unitario'] if d['Precio_Unitario'] and d['Precio_Unitario'] > 0 else (d['Subtotal'] / d['Cantidad_Vendida'])
+        
         items_venta.append({
             'nombre': d['Nombre'],
-            'precio': precio_unitario,
+            'precio_unitario': precio_congelado, # Coincide con la etiqueta nueva en ticket.html
             'cantidad': d['Cantidad_Vendida'],
             'subtotal': d['Subtotal']
         })
